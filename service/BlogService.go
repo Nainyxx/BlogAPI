@@ -23,56 +23,69 @@ Implented main methods:
 
 Implented utils methods:
 
-	SearchUserByID - searching user object by his ID in BlogService.users
-	SearchPostByID - searching post object by his ID in BlogService.posts
+	SearchUserByID - searching user object by his ID in BlogService.Users
+	SearchPostByID - searching post object by his ID in BlogService.Posts
+	SearchCommentByID - searching comment object by his ID in BlogService.Comments
 	IsLoginTaken - is user login taken or not validate
+	UserIsExist - is user exist in BlogService.Users
+	PostIsExist - is post exist in BlogService.Posts
+	CommentIsExist - is comment exist in BlogService.Comments
 
 TODO methods:
 */
 type BlogService struct {
-	users    []models.User
-	posts    []models.Post
-	comments []models.Comment
+	Users    []models.User
+	Posts    []models.Post
+	Comments []models.Comment
 }
 
 func NewBlogService() *BlogService {
 	return &BlogService{
-		users:    make([]models.User, 0),
-		posts:    make([]models.Post, 0),
-		comments: make([]models.Comment, 0),
+		Users:    make([]models.User, 0),
+		Posts:    make([]models.Post, 0),
+		Comments: make([]models.Comment, 0),
 	}
 }
 
 func (bs *BlogService) SearchUserByID(userID uuid.UUID) (*models.User, error) {
-	for i := range bs.users {
-		if bs.users[i].ID == userID {
-			return &bs.users[i], nil
+	for i := range bs.Users {
+		if bs.Users[i].ID == userID {
+			return &bs.Users[i], nil
+		}
+	}
+	return nil, errors.New("User not found")
+}
+
+func (bs *BlogService) SearchUserByLogin(login string) (*models.User, error) {
+	for i := range bs.Users {
+		if bs.Users[i].Login == login {
+			return &bs.Users[i], nil
 		}
 	}
 	return nil, errors.New("User not found")
 }
 
 func (bs *BlogService) SearchPostByID(postID uuid.UUID) (*models.Post, error) {
-	for i := range bs.posts {
-		if bs.posts[i].ID == postID {
-			return &bs.posts[i], nil
+	for i := range bs.Posts {
+		if bs.Posts[i].ID == postID {
+			return &bs.Posts[i], nil
 		}
 	}
 	return nil, errors.New("post not found")
 }
 
 func (bs *BlogService) SearchCommentByID(commentID uuid.UUID) (*models.Comment, error) {
-	for i := range bs.comments {
-		if bs.comments[i].ID == commentID {
-			return &bs.comments[i], nil
+	for i := range bs.Comments {
+		if bs.Comments[i].ID == commentID {
+			return &bs.Comments[i], nil
 		}
 	}
 	return nil, errors.New("comment not found")
 }
 
 func (bs *BlogService) UserIsExist(userID uuid.UUID) error {
-	for i := range bs.users {
-		if bs.users[i].ID == userID {
+	for i := range bs.Users {
+		if bs.Users[i].ID == userID {
 			return nil
 		}
 	}
@@ -80,8 +93,8 @@ func (bs *BlogService) UserIsExist(userID uuid.UUID) error {
 }
 
 func (bs *BlogService) PostIsExist(postID uuid.UUID) error {
-	for i := range bs.posts {
-		if bs.posts[i].ID == postID {
+	for i := range bs.Posts {
+		if bs.Posts[i].ID == postID {
 			return nil
 		}
 	}
@@ -89,8 +102,8 @@ func (bs *BlogService) PostIsExist(postID uuid.UUID) error {
 }
 
 func (bs *BlogService) CommentIsExist(commentID uuid.UUID) error {
-	for i := range bs.comments {
-		if bs.comments[i].ID == commentID {
+	for i := range bs.Comments {
+		if bs.Comments[i].ID == commentID {
 			return nil
 		}
 	}
@@ -98,7 +111,7 @@ func (bs *BlogService) CommentIsExist(commentID uuid.UUID) error {
 }
 
 func (bs *BlogService) IsLoginTaken(login string) bool {
-	for _, user := range bs.users {
+	for _, user := range bs.Users {
 		if user.Login == login {
 			return true
 		}
@@ -115,7 +128,7 @@ func (bs *BlogService) RegisterUser(name, surname, login, email, password string
 		return err
 	}
 
-	bs.users = append(bs.users, newUser)
+	bs.Users = append(bs.Users, newUser)
 	return nil
 }
 
@@ -129,7 +142,7 @@ func (bs *BlogService) CreatePost(userID uuid.UUID, title, body, imageURL string
 	if err != nil {
 		return err
 	}
-	bs.posts = append(bs.posts, newPost)
+	bs.Posts = append(bs.Posts, newPost)
 	user.AddPost(newPost.ID)
 	return nil
 }
@@ -185,8 +198,8 @@ func (bs *BlogService) DeletePost(userID, postID uuid.UUID) error {
 	}
 
 	postIndex := -1
-	for i := range bs.posts {
-		if bs.posts[i].ID == postID {
+	for i := range bs.Posts {
+		if bs.Posts[i].ID == postID {
 			postIndex = i
 			break
 		}
@@ -196,8 +209,8 @@ func (bs *BlogService) DeletePost(userID, postID uuid.UUID) error {
 		return errors.New("post not found in global list")
 	}
 
-	bs.posts[postIndex] = bs.posts[len(bs.posts)-1]
-	bs.posts = bs.posts[:len(bs.posts)-1]
+	bs.Posts[postIndex] = bs.Posts[len(bs.Posts)-1]
+	bs.Posts = bs.Posts[:len(bs.Posts)-1]
 
 	return nil
 }
@@ -215,7 +228,7 @@ func (bs *BlogService) WriteComment(userID, postID uuid.UUID, body string) error
 	if err != nil {
 		return err
 	}
-	bs.comments = append(bs.comments, newComment)
+	bs.Comments = append(bs.Comments, newComment)
 	post.CommentsID = append(post.CommentsID, newComment.ID)
 	post.CommentCount++
 	user.CommentsID = append(user.CommentsID, newComment.ID)
@@ -231,8 +244,9 @@ func (bs *BlogService) LikeComment(userID, commentID uuid.UUID) error {
 	if err != nil {
 		return err
 	}
+	err = comment.LikeComment(userID)
 	user.LikeComment(commentID)
-	return comment.LikeComment(userID)
+	return err
 }
 
 func (bs *BlogService) DislikeComment(userID, commentID uuid.UUID) error {
