@@ -119,6 +119,15 @@ func (bs *BlogService) IsLoginTaken(login string) bool {
 	return false
 }
 
+func (bs *BlogService) IsEmailTaken(email string) bool {
+	for _, user := range bs.Users {
+		if user.Email == email {
+			return true
+		}
+	}
+	return false
+}
+
 func (bs *BlogService) RegisterUser(name, surname, login, email, password string) error {
 	if bs.IsLoginTaken(login) {
 		return errors.New("Login taken")
