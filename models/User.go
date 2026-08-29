@@ -17,8 +17,8 @@ type User struct {
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"-"`
 
-	Posts      []uuid.UUID `json:"posts"`
-	LikedPosts []uuid.UUID `json:"liked_posts"`
+	PostsID      []uuid.UUID `json:"posts"`
+	LikedPostsID []uuid.UUID `json:"liked_posts"`
 
 	CommentsID      []uuid.UUID `json:"commentsID"`
 	LikedCommentsID []uuid.UUID `json:"liked_commentsID"`
@@ -50,8 +50,8 @@ func CreateUser(Name, Surname, Login, Email, Password string) (User, error) {
 		Login:           Login,
 		Email:           Email,
 		PasswordHash:    passwordHash,
-		Posts:           make([]uuid.UUID, 0),
-		LikedPosts:      make([]uuid.UUID, 0),
+		PostsID:         make([]uuid.UUID, 0),
+		LikedPostsID:    make([]uuid.UUID, 0),
 		CommentsID:      make([]uuid.UUID, 0),
 		LikedCommentsID: make([]uuid.UUID, 0),
 		CreatedAt:       time.Now(),
@@ -66,20 +66,30 @@ func (u *User) CheckPassword(password string) bool {
 }
 
 func (u *User) AddPost(postID uuid.UUID) {
-	for _, post := range u.Posts {
+	for _, post := range u.PostsID {
 		if post == postID {
 			return
 		}
 	}
-	u.Posts = append(u.Posts, postID)
+	u.PostsID = append(u.PostsID, postID)
+	u.UpdatedAt = time.Now()
+}
+
+func (u *User) AddComment(commentID uuid.UUID) {
+	for _, comment := range u.CommentsID {
+		if comment == commentID {
+			return
+		}
+	}
+	u.PostsID = append(u.CommentsID, commentID)
 	u.UpdatedAt = time.Now()
 }
 
 func (u *User) RemovePost(postID uuid.UUID) {
-	for i, post := range u.Posts {
+	for i, post := range u.PostsID {
 		if post == postID {
-			u.Posts[i] = u.Posts[len(u.Posts)-1]
-			u.Posts = u.Posts[:len(u.Posts)-1]
+			u.PostsID[i] = u.PostsID[len(u.PostsID)-1]
+			u.PostsID = u.PostsID[:len(u.PostsID)-1]
 
 			u.UpdatedAt = time.Now()
 			return
@@ -88,20 +98,20 @@ func (u *User) RemovePost(postID uuid.UUID) {
 }
 
 func (u *User) LikePost(postID uuid.UUID) {
-	for _, post := range u.LikedPosts {
+	for _, post := range u.LikedPostsID {
 		if post == postID {
 			return
 		}
 	}
-	u.LikedPosts = append(u.LikedPosts, postID)
+	u.LikedPostsID = append(u.LikedPostsID, postID)
 	u.UpdatedAt = time.Now()
 }
 
 func (u *User) UnlikePost(postID uuid.UUID) {
-	for i, id := range u.LikedPosts {
+	for i, id := range u.LikedPostsID {
 		if id == postID {
-			u.LikedPosts[i] = u.LikedPosts[len(u.LikedPosts)-1]
-			u.LikedPosts = u.LikedPosts[:len(u.LikedPosts)-1]
+			u.LikedPostsID[i] = u.LikedPostsID[len(u.LikedPostsID)-1]
+			u.LikedPostsID = u.LikedPostsID[:len(u.LikedPostsID)-1]
 
 			u.UpdatedAt = time.Now()
 			return
@@ -129,4 +139,40 @@ func (u *User) UnlikeComment(commentID uuid.UUID) {
 			return
 		}
 	}
+}
+
+func (u *User) CreatePost(postID uuid.UUID) {
+	for _, id := range u.PostsID {
+		if id == postID {
+			return
+		}
+	}
+	u.PostsID = append(u.PostsID, postID)
+	u.UpdatedAt = time.Now()
+}
+
+func (u *User) UpdateName(newName string) error {
+	if u.Name != newName {
+		if utils.IsNameValid(newName) == nil {
+			u.Name = newName
+			u.UpdatedAt = time.Now()
+			return nil
+		} else {
+			return errors.New("name is not valid")
+		}
+	}
+	return errors.New("new name must be different")
+}
+
+func (u *User) UpdateSurname(newName string) error {
+	if u.Surname != newName {
+		if utils.IsNameValid(newName) == nil {
+			u.Surname = newName
+			u.UpdatedAt = time.Now()
+			return nil
+		} else {
+			return errors.New("surname is not valid")
+		}
+	}
+	return errors.New("surnew name must be different")
 }

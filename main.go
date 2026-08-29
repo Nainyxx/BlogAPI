@@ -1,8 +1,8 @@
 package main
 
 import (
-	"BlogAPI/Gin"
-	"BlogAPI/service"
+	"BlogAPI/my_models/Gin"
+	"BlogAPI/my_models/service"
 	"log"
 
 	"github.com/gin-contrib/cors"

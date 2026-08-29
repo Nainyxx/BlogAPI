@@ -57,7 +57,7 @@ func (c *Comment) LikeComment(userid uuid.UUID) error {
 	return nil
 }
 
-func (c *Comment) DislikeComment(userid uuid.UUID) error {
+func (c *Comment) UnlikeComment(userid uuid.UUID) error {
 	likedIndex := -1
 	for i, u := range c.UsersWhoLiked {
 		if u == userid {
