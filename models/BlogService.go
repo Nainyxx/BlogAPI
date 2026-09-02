@@ -225,9 +225,9 @@ func (p *BlogService) DeleteUser(userID uuid.UUID) error {
 	return errors.New("user not found by id")
 }
 
-func (p *BlogService) DeletePost(userID uuid.UUID) error {
+func (p *BlogService) DeletePost(postID uuid.UUID) error {
 	for i, post := range p.posts {
-		if post.ID == userID {
+		if post.ID == postID {
 			p.posts[i] = p.posts[len(p.posts)-1]
 			p.posts = p.posts[:len(p.posts)-1]
 			return nil
