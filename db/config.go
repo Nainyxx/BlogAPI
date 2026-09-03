@@ -17,6 +17,7 @@ type DatabaseConfig struct {
 }
 
 func LoadDBCfg() DatabaseConfig {
+	// Загружаем .env файл
 	_ = godotenv.Load()
 
 	return DatabaseConfig{

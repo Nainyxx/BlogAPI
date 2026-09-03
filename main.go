@@ -13,7 +13,7 @@ func main() {
 	router := Gin.InitGin(blog_service)
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:5500"}, // Укажите точный адрес фронтенда
+		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:5500"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
