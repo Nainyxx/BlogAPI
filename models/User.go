@@ -1,3 +1,4 @@
+// User model: domain data and behavior for accounts (registration, posts/comments tracking, likes).
 package models
 
 import (
@@ -81,7 +82,7 @@ func (u *User) AddComment(commentID uuid.UUID) {
 			return
 		}
 	}
-	u.PostsID = append(u.CommentsID, commentID)
+	u.CommentsID = append(u.CommentsID, commentID)
 	u.UpdatedAt = time.Now()
 }
 

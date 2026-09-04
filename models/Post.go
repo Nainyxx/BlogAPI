@@ -1,3 +1,4 @@
+// Post model: domain data and behavior for blog posts (creation, updates, likes, comment tracking).
 package models
 
 import (

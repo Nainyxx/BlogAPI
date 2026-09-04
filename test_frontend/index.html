@@ -394,6 +394,12 @@
             <p>Тестирование REST API</p>
         </header>
 
+        <div style="padding: 12px 30px; background:#f5f5f5; border-bottom:1px solid #ddd; display:flex; align-items:center; gap:10px;">
+            <label for="api_base_input" style="font-weight:500; color:#333; white-space:nowrap; margin:0;">API URL:</label>
+            <input type="text" id="api_base_input" style="flex:1; max-width:320px;" placeholder="http://localhost:8082">
+            <button onclick="saveApiBase()" class="btn-secondary" style="margin-left:0;">Сохранить</button>
+        </div>
+
         <nav id="tabs">
             <button class="tab-btn active" data-section="register">Регистрация</button>
             <button class="tab-btn" data-section="users">Пользователи</button>
@@ -499,7 +505,18 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8080';
+        const DEFAULT_API_BASE = 'http://localhost:8082';
+        let API_BASE = localStorage.getItem('blogapi_api_base') || DEFAULT_API_BASE;
+
+        document.getElementById('api_base_input').value = API_BASE;
+
+        function saveApiBase() {
+            const value = document.getElementById('api_base_input').value.trim().replace(/\/+$/, '');
+            if (!value) return;
+            API_BASE = value;
+            localStorage.setItem('blogapi_api_base', value);
+            showMessage(`✅ API URL сохранён: ${value}`, 'success');
+        }
 
         // ============ НАВИГАЦИЯ ============
         document.querySelectorAll('.tab-btn').forEach(btn => {

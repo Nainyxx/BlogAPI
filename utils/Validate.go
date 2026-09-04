@@ -1,3 +1,4 @@
+// Input validation helpers for user-provided fields (name, login, email, image URL).
 package utils
 
 import (

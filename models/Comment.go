@@ -1,3 +1,4 @@
+// Comment model: domain data and behavior for post comments (creation, editing, likes).
 package models
 
 import (
@@ -11,6 +12,7 @@ type Comment struct {
 	ID       uuid.UUID `json:"id"`
 	Body     string    `json:"body"`
 	AuthorID uuid.UUID `json:"author_id"`
+	PostID   uuid.UUID `json:"post_id"`
 
 	UsersWhoLiked []uuid.UUID `json:"who_liked"`
 	LikedCount    int         `json:"liked_count"`
@@ -27,6 +29,7 @@ func CreateComment(userid, postid uuid.UUID, body string) (Comment, error) {
 		ID:            uuid.New(),
 		Body:          body,
 		AuthorID:      userid,
+		PostID:        postid,
 		UsersWhoLiked: make([]uuid.UUID, 0),
 		LikedCount:    0,
 		CreatedAt:     time.Now(),
