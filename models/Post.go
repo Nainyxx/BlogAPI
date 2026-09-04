@@ -1,3 +1,4 @@
+// Post model: domain data and behavior for blog posts (creation, updates, likes, comment tracking).
 package models
 
 import (
@@ -101,4 +102,46 @@ func (p *Post) UpdateImageURL(imageURL string, UserID uuid.UUID) error {
 	p.ImageURL = imageURL
 	p.UpdatedAt = time.Now()
 	return nil
+}
+
+func (p *Post) AddComment(commentID uuid.UUID) {
+	for _, id := range p.CommentsID {
+		if id == commentID {
+			return
+		}
+	}
+	p.CommentsID = append(p.CommentsID, commentID)
+	p.UpdatedAt = time.Now()
+}
+
+func (p *Post) RemoveComment(commentID uuid.UUID) {
+	for i, id := range p.CommentsID {
+		if id == commentID {
+			p.CommentsID[i] = p.CommentsID[len(p.CommentsID)-1]
+			p.CommentsID = p.CommentsID[:len(p.CommentsID)-1]
+			p.UpdatedAt = time.Now()
+		}
+	}
+}
+
+func (p *Post) LikePost(userID uuid.UUID) {
+	for _, id := range p.UsersWhoLiked {
+		if id == userID {
+			return
+		}
+	}
+	p.UsersWhoLiked = append(p.UsersWhoLiked, userID)
+	p.LikedCount++
+	p.UpdatedAt = time.Now()
+}
+
+func (p *Post) UnlikePost(userID uuid.UUID) {
+	for i, id := range p.UsersWhoLiked {
+		if id == userID {
+			p.UsersWhoLiked[i] = p.UsersWhoLiked[len(p.UsersWhoLiked)-1]
+			p.UsersWhoLiked = p.UsersWhoLiked[:len(p.UsersWhoLiked)-1]
+			p.LikedCount--
+			p.UpdatedAt = time.Now()
+		}
+	}
 }

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogAPI Frontend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        nav {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            overflow-x: auto;
+        }
+
+        nav button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        nav button:hover {
+            background: #eee;
+        }
+
+        nav button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .user-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .user-card:hover {
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .user-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .user-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .user-info p {
+            margin: 0;
+        }
+
+        .user-info strong {
+            color: #333;
+        }
+
+        .post-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .post-card:hover {
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .post-card h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .post-author {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .post-body {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .post-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 15px;
+        }
+
+        .post-image {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .post-actions button {
+            font-size: 12px;
+            padding: 8px 15px;
+        }
+
+        .like-btn {
+            background: #ff6b6b;
+        }
+
+        .like-btn.liked {
+            background: #dc3545;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .user-info {
+                grid-template-columns: 1fr;
+            }
+
+            nav button {
+                font-size: 12px;
+                padding: 12px 15px;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .tabs-content {
+            display: flex;
+            gap: 30px;
+        }
+
+        .tab-pane {
+            flex: 1;
+        }
+
+        .comment-section {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .comment {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .comment-author {
+            font-weight: 500;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .comment-body {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 BlogAPI Frontend</h1>
+            <p>Тестирование REST API</p>
+        </header>
+
+        <div style="padding: 12px 30px; background:#f5f5f5; border-bottom:1px solid #ddd; display:flex; align-items:center; gap:10px;">
+            <label for="api_base_input" style="font-weight:500; color:#333; white-space:nowrap; margin:0;">API URL:</label>
+            <input type="text" id="api_base_input" style="flex:1; max-width:320px;" placeholder="http://localhost:8082">
+            <button onclick="saveApiBase()" class="btn-secondary" style="margin-left:0;">Сохранить</button>
+        </div>
+
+        <nav id="tabs">
+            <button class="tab-btn active" data-section="register">Регистрация</button>
+            <button class="tab-btn" data-section="users">Пользователи</button>
+            <button class="tab-btn" data-section="create-post">Новый пост</button>
+            <button class="tab-btn" data-section="posts">Посты</button>
+        </nav>
+
+        <div class="content">
+            <div id="message-container"></div>
+
+            <!-- РЕГИСТРАЦИЯ -->
+            <div id="register" class="section active">
+                <h2>Регистрация</h2>
+                <div class="grid-2">
+                    <div>
+                        <div class="form-group">
+                            <label>Имя</label>
+                            <input type="text" id="reg_name" placeholder="John">
+                        </div>
+                        <div class="form-group">
+                            <label>Фамилия</label>
+                            <input type="text" id="reg_surname" placeholder="Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Логин</label>
+                            <input type="text" id="reg_login" placeholder="johndoe">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="reg_email" placeholder="john@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Пароль</label>
+                            <input type="password" id="reg_password" placeholder="password123">
+                        </div>
+                        <button onclick="registerUser()">Зарегистрироваться</button>
+                    </div>
+                    <div>
+                        <h3>Тестовые данные</h3>
+                        <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; font-size: 12px;">
+{
+  "name": "John",
+  "surname": "Doe",
+  "login": "johndoe",
+  "email": "john@example.com",
+  "password": "password123"
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ПОЛЬЗОВАТЕЛИ -->
+            <div id="users" class="section">
+                <h2>Пользователи</h2>
+                <button onclick="loadUsers()">🔄 Загрузить пользователей</button>
+                <div id="users-list" style="margin-top: 20px;"></div>
+            </div>
+
+            <!-- СОЗДАТЬ ПОСТ -->
+            <div id="create-post" class="section">
+                <h2>Создать новый пост</h2>
+                <div class="grid-2">
+                    <div>
+                        <div class="form-group">
+                            <label>ID пользователя</label>
+                            <input type="text" id="post_user_id" placeholder="550e8400-e29b-41d4-a716-446655440000">
+                            <small style="color: #999; margin-top: 5px; display: block;">Скопируй ID из списка пользователей</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Заголовок</label>
+                            <input type="text" id="post_title" placeholder="My First Post">
+                        </div>
+                        <div class="form-group">
+                            <label>Контент</label>
+                            <textarea id="post_body" placeholder="Контент поста..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>URL картинки</label>
+                            <input type="url" id="post_image_url" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <button onclick="createPost()">📝 Создать пост</button>
+                    </div>
+                    <div>
+                        <h3>Тестовые данные</h3>
+                        <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; font-size: 12px;">
+{
+  "user_id": "...",
+  "title": "My Post",
+  "body": "Content here",
+  "image_url": "https://picsum.photos/400/300"
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ПОСТЫ -->
+            <div id="posts" class="section">
+                <h2>Посты</h2>
+                <button onclick="loadPosts()">🔄 Загрузить посты</button>
+                <div id="posts-list" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_API_BASE = 'http://localhost:8082';
+        let API_BASE = localStorage.getItem('blogapi_api_base') || DEFAULT_API_BASE;
+
+        document.getElementById('api_base_input').value = API_BASE;
+
+        function saveApiBase() {
+            const value = document.getElementById('api_base_input').value.trim().replace(/\/+$/, '');
+            if (!value) return;
+            API_BASE = value;
+            localStorage.setItem('blogapi_api_base', value);
+            showMessage(`✅ API URL сохранён: ${value}`, 'success');
+        }
+
+        // ============ НАВИГАЦИЯ ============
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const section = this.getAttribute('data-section');
+                showSection(section);
+                
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // ============ СООБЩЕНИЯ ============
+        function showMessage(text, type = 'success') {
+            const container = document.getElementById('message-container');
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = text;
+            container.appendChild(div);
+            
+            setTimeout(() => {
+                div.remove();
+            }, 5000);
+        }
+
+        // ============ РЕГИСТРАЦИЯ ============
+        async function registerUser() {
+            const name = document.getElementById('reg_name').value;
+            const surname = document.getElementById('reg_surname').value;
+            const login = document.getElementById('reg_login').value;
+            const email = document.getElementById('reg_email').value;
+            const password = document.getElementById('reg_password').value;
+
+            if (!name || !surname || !login || !email || !password) {
+                showMessage('Заполни все поля!', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, surname, login, email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showMessage(`✅ Пользователь ${login} успешно зарегистрирован!`, 'success');
+                    document.getElementById('reg_name').value = '';
+                    document.getElementById('reg_surname').value = '';
+                    document.getElementById('reg_login').value = '';
+                    document.getElementById('reg_email').value = '';
+                    document.getElementById('reg_password').value = '';
+                } else {
+                    showMessage(`❌ Ошибка: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                showMessage(`❌ Не удалось подключиться к серверу (${e.message})`, 'error');
+            }
+        }
+
+        // ============ ПОЛЬЗОВАТЕЛИ ============
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_BASE}/users`);
+                const users = await res.json();
+
+                const list = document.getElementById('users-list');
+                
+                if (!users || users.length === 0) {
+                    list.innerHTML = '<div class="empty-state">Нет пользователей</div>';
+                    return;
+                }
+
+                list.innerHTML = users.map(user => `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div>
+                                <strong>👤 ${user.name} ${user.surname}</strong>
+                            </div>
+                            <div>
+                                <strong>Login:</strong> ${user.login}
+                            </div>
+                            <div>
+                                <strong>Email:</strong> ${user.email}
+                            </div>
+                            <div>
+                                <strong>ID:</strong> ${user.id}
+                            </div>
+                        </div>
+                        <button onclick="copyToClipboard('${user.id}')" class="btn-secondary">📋 Копировать ID</button>
+                    </div>
+                `).join('');
+            } catch (e) {
+                showMessage(`❌ Ошибка при загрузке пользователей: ${e.message}`, 'error');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            showMessage('✅ ID скопирован в буфер обмена!', 'success');
+        }
+
+        // ============ ПОСТЫ ============
+        async function createPost() {
+            const user_id = document.getElementById('post_user_id').value;
+            const title = document.getElementById('post_title').value;
+            const body = document.getElementById('post_body').value;
+            const image_url = document.getElementById('post_image_url').value;
+
+            if (!user_id || !title || !body) {
+                showMessage('Заполни обязательные поля!', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/posts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id, title, body, image_url })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showMessage('✅ Пост успешно создан!', 'success');
+                    document.getElementById('post_user_id').value = '';
+                    document.getElementById('post_title').value = '';
+                    document.getElementById('post_body').value = '';
+                    document.getElementById('post_image_url').value = '';
+                    loadPosts();
+                } else {
+                    showMessage(`❌ Ошибка: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                showMessage(`❌ Не удалось подключиться к серверу`, 'error');
+            }
+        }
+
+        async function loadPosts() {
+            try {
+                const res = await fetch(`${API_BASE}/posts`);
+                const posts = await res.json();
+                const usersRes = await fetch(`${API_BASE}/users`);
+                const users = await usersRes.json();
+
+                const userMap = {};
+                users.forEach(u => userMap[u.id] = u);
+
+                const list = document.getElementById('posts-list');
+                
+                if (!posts || posts.length === 0) {
+                    list.innerHTML = '<div class="empty-state">Нет постов</div>';
+                    return;
+                }
+
+                list.innerHTML = posts.map(post => `
+                    <div class="post-card">
+                        <div class="post-header">
+                            <div>
+                                <h3>${post.title}</h3>
+                                <p class="post-author">👤 ${userMap[post.author_id]?.name || 'Неизвестный'}</p>
+                            </div>
+                        </div>
+                        ${post.image_url ? `<img src="${post.image_url}" class="post-image" alt="Post image">` : ''}
+                        <p class="post-body">${post.body}</p>
+                        <div class="post-meta">
+                            <span>❤️ Лайки: ${post.liked_count || 0}</span>
+                            <span>💬 Комментарии: ${post.comment_count || 0}</span>
+                            <span>📅 ${new Date(post.created_at).toLocaleDateString('ru-RU')}</span>
+                        </div>
+                        <div class="post-actions">
+                            <button onclick="copyToClipboard('${post.id}')" class="btn-secondary">📋 Копировать ID</button>
+                            <button onclick="deletePost('${post.id}')" class="btn-danger">🗑️ Удалить</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                showMessage(`❌ Ошибка при загрузке постов: ${e.message}`, 'error');
+            }
+        }
+
+        async function deletePost(postId) {
+            const userId = prompt('Введи ID пользователя для подтверждения:');
+            if (!userId) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+
+                if (res.ok) {
+                    showMessage('✅ Пост удален!', 'success');
+                    loadPosts();
+                } else {
+                    const data = await res.json();
+                    showMessage(`❌ Ошибка: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                showMessage(`❌ Ошибка удаления`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+// Password hashing helpers used by the User model.
 package utils
 
 import (

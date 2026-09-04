@@ -1,262 +1,214 @@
+// BlogService: business logic layer implementing interfaces.BlogService on top of the repository interfaces.
 package service
 
 import (
+	"BlogAPI/interfaces"
 	"BlogAPI/models"
 	"errors"
 
 	"github.com/google/uuid"
 )
 
-/*
-Blog service - main data controlling component
-
-Implented main methods:
-
-	RegisterUser - user registration method
-	CreatePost - creating post A by user B. post A.author = B.ID
-	UpdatePost - post editing method (change name, body or image url)
-	DeletePost - deleting post method
-	WriteComment
-	LikeComment
-	DislikeComment
-	EditComment
-
-Implented utils methods:
-
-	SearchUserByID - searching user object by his ID in BlogService.users
-	SearchPostByID - searching post object by his ID in BlogService.posts
-	IsLoginTaken - is user login taken or not validate
-
-TODO methods:
-*/
 type BlogService struct {
-	users    []models.User
-	posts    []models.Post
-	comments []models.Comment
+	userRepo    interfaces.UserRepository
+	postRepo    interfaces.PostRepository
+	commentRepo interfaces.CommentRepository
 }
 
-func NewBlogService() *BlogService {
+func NewBlogService(userRepo interfaces.UserRepository, postRepo interfaces.PostRepository, commentRepo interfaces.CommentRepository) *BlogService {
 	return &BlogService{
-		users:    make([]models.User, 0),
-		posts:    make([]models.Post, 0),
-		comments: make([]models.Comment, 0),
+		userRepo:    userRepo,
+		postRepo:    postRepo,
+		commentRepo: commentRepo,
 	}
 }
 
-func (bs *BlogService) SearchUserByID(userID uuid.UUID) (*models.User, error) {
-	for i := range bs.users {
-		if bs.users[i].ID == userID {
-			return &bs.users[i], nil
-		}
-	}
-	return nil, errors.New("User not found")
+func (s *BlogService) GetAllUsers() ([]models.User, error) {
+	return s.userRepo.GetAll()
 }
 
-func (bs *BlogService) SearchPostByID(postID uuid.UUID) (*models.Post, error) {
-	for i := range bs.posts {
-		if bs.posts[i].ID == postID {
-			return &bs.posts[i], nil
-		}
-	}
-	return nil, errors.New("post not found")
+func (s *BlogService) GetAllPosts() ([]models.Post, error) {
+	return s.postRepo.GetAll()
 }
 
-func (bs *BlogService) SearchCommentByID(commentID uuid.UUID) (*models.Comment, error) {
-	for i := range bs.comments {
-		if bs.comments[i].ID == commentID {
-			return &bs.comments[i], nil
-		}
-	}
-	return nil, errors.New("comment not found")
-}
-
-func (bs *BlogService) UserIsExist(userID uuid.UUID) error {
-	for i := range bs.users {
-		if bs.users[i].ID == userID {
-			return nil
-		}
-	}
-	return errors.New("User not found")
-}
-
-func (bs *BlogService) PostIsExist(postID uuid.UUID) error {
-	for i := range bs.posts {
-		if bs.posts[i].ID == postID {
-			return nil
-		}
-	}
-	return errors.New("post not found")
-}
-
-func (bs *BlogService) CommentIsExist(commentID uuid.UUID) error {
-	for i := range bs.comments {
-		if bs.comments[i].ID == commentID {
-			return nil
-		}
-	}
-	return errors.New("comment not found")
-}
-
-func (bs *BlogService) IsLoginTaken(login string) bool {
-	for _, user := range bs.users {
-		if user.Login == login {
-			return true
-		}
-	}
-	return false
-}
-
-func (bs *BlogService) RegisterUser(name, surname, login, email, password string) error {
-	if bs.IsLoginTaken(login) {
-		return errors.New("Login taken")
-	}
-	newUser, err := models.CreateUser(name, surname, login, email, password)
-	if err != nil {
-		return err
-	}
-
-	bs.users = append(bs.users, newUser)
-	return nil
-}
-
-func (bs *BlogService) CreatePost(userID uuid.UUID, title, body, imageURL string) error {
-	user, err := bs.SearchUserByID(userID)
-	if err != nil {
-		return err
-	}
-
-	newPost, err := models.CreatePost(userID, title, body, imageURL)
-	if err != nil {
-		return err
-	}
-	bs.posts = append(bs.posts, newPost)
-	user.AddPost(newPost.ID)
-	return nil
-}
-
-func (bs *BlogService) UpdatePost(userID, postID uuid.UUID, newTitle, newBody, newImageURL string) error {
-	editedPost, err := bs.SearchPostByID(postID)
-	if err != nil {
-		return err
-	}
-
-	hasChanges := false
-
-	if editedPost.Title != newTitle {
-		err = editedPost.UpdateTitle(newTitle, userID)
-		if err != nil {
-			return err
-		}
-		hasChanges = true
-	}
-	if editedPost.Body != newBody {
-		err = editedPost.UpdateBody(newBody, userID)
-		if err != nil {
-			return err
-		}
-		hasChanges = true
-	}
-	if editedPost.ImageURL != newImageURL {
-		err = editedPost.UpdateImageURL(newImageURL, userID)
-		if err != nil {
-			return err
-		}
-		hasChanges = true
-	}
-	if hasChanges == false {
-		return errors.New("No changes")
-	}
-	return nil
-}
-
-func (bs *BlogService) DeletePost(userID, postID uuid.UUID) error {
-	editedPost, err := bs.SearchPostByID(postID)
-	if err != nil {
-		return err
-	}
-
-	if editedPost.AuthorID != userID {
-		return errors.New("not authorized to delete this post")
-	}
-
-	user, err := bs.SearchUserByID(userID)
-	if err == nil {
-		user.RemovePost(postID)
-	}
-
-	postIndex := -1
-	for i := range bs.posts {
-		if bs.posts[i].ID == postID {
-			postIndex = i
-			break
-		}
-	}
-
-	if postIndex == -1 {
-		return errors.New("post not found in global list")
-	}
-
-	bs.posts[postIndex] = bs.posts[len(bs.posts)-1]
-	bs.posts = bs.posts[:len(bs.posts)-1]
-
-	return nil
-}
-
-func (bs *BlogService) WriteComment(userID, postID uuid.UUID, body string) error {
-	post, err := bs.SearchPostByID(postID)
-	if err != nil {
-		return err
-	}
-	user, err := bs.SearchUserByID(userID)
-	if err != nil {
-		return err
-	}
-	newComment, err := models.CreateComment(userID, postID, body)
-	if err != nil {
-		return err
-	}
-	bs.comments = append(bs.comments, newComment)
-	post.CommentsID = append(post.CommentsID, newComment.ID)
-	post.CommentCount++
-	user.CommentsID = append(user.CommentsID, newComment.ID)
-	return nil
-}
-
-func (bs *BlogService) LikeComment(userID, commentID uuid.UUID) error {
-	user, err := bs.SearchUserByID(userID)
-	if err != nil {
-		return err
-	}
-	comment, err := bs.SearchCommentByID(commentID)
-	if err != nil {
-		return err
-	}
-	user.LikeComment(commentID)
-	return comment.LikeComment(userID)
-}
-
-func (bs *BlogService) DislikeComment(userID, commentID uuid.UUID) error {
-	user, err := bs.SearchUserByID(userID)
-	if err != nil {
-		return err
-	}
-	comment, err := bs.SearchCommentByID(commentID)
-	if err != nil {
-		return err
-	}
-	user.UnlikeComment(commentID)
-	return comment.DislikeComment(userID)
-}
-
-func (bs *BlogService) EditComment(userID, commentID uuid.UUID, newBody string) error {
-	err := bs.UserIsExist(userID)
-	if err != nil {
-		return err
-	}
-	editComment, err := bs.SearchCommentByID(commentID)
-	if err != nil {
-		return err
-	}
-	err = editComment.ChangeBody(userID, newBody)
+func (s *BlogService) SearchUserByID(userID uuid.UUID) error {
+	_, err := s.userRepo.GetByID(userID)
 	return err
+}
+
+func (s *BlogService) SearchUserByLogin(login string) error {
+	_, err := s.userRepo.GetByLogin(login)
+	return err
+}
+
+func (s *BlogService) SearchPostByID(postID uuid.UUID) error {
+	_, err := s.postRepo.GetByID(postID)
+	return err
+}
+
+func (s *BlogService) SearchCommentByID(commentID uuid.UUID) error {
+	_, err := s.commentRepo.GetByID(commentID)
+	return err
+}
+
+func (s *BlogService) IsLoginTaken(login string) bool {
+	_, err := s.userRepo.GetByLogin(login)
+	return err == nil
+}
+
+func (s *BlogService) IsEmailTaken(email string) bool {
+	_, err := s.userRepo.GetByEmail(email)
+	return err == nil
+}
+
+func (s *BlogService) UserIsExist(userID uuid.UUID) error {
+	if _, err := s.userRepo.GetByID(userID); err != nil {
+		return errors.New("user does not exist")
+	}
+	return nil
+}
+
+func (s *BlogService) PostIsExist(postID uuid.UUID) error {
+	if _, err := s.postRepo.GetByID(postID); err != nil {
+		return errors.New("post does not exist")
+	}
+	return nil
+}
+
+func (s *BlogService) CommentIsExist(commentID uuid.UUID) error {
+	if _, err := s.commentRepo.GetByID(commentID); err != nil {
+		return errors.New("comment does not exist")
+	}
+	return nil
+}
+
+func (s *BlogService) RegisterUser(name, surname, login, email, password string) error {
+	if s.IsLoginTaken(login) {
+		return errors.New("login already taken")
+	}
+	if s.IsEmailTaken(email) {
+		return errors.New("email already taken")
+	}
+
+	user, err := models.CreateUser(name, surname, login, email, password)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.Create(&user)
+}
+
+func (s *BlogService) CreatePost(userID uuid.UUID, title, body, imageURL string) error {
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		return err
+	}
+
+	post, err := models.CreatePost(userID, title, body, imageURL)
+	if err != nil {
+		return err
+	}
+
+	if err := s.postRepo.Create(&post); err != nil {
+		return err
+	}
+
+	user.AddPost(post.ID)
+	return s.userRepo.Update(user)
+}
+
+func (s *BlogService) UpdatePost(userID, postID uuid.UUID, newTitle, newBody, newImageURL string) error {
+	post, err := s.postRepo.GetByID(postID)
+	if err != nil {
+		return err
+	}
+
+	if newTitle != "" {
+		if err := post.UpdateTitle(newTitle, userID); err != nil {
+			return err
+		}
+	}
+	if newBody != "" {
+		if err := post.UpdateBody(newBody, userID); err != nil {
+			return err
+		}
+	}
+	if newImageURL != "" {
+		if err := post.UpdateImageURL(newImageURL, userID); err != nil {
+			return err
+		}
+	}
+
+	return s.postRepo.Update(post)
+}
+
+func (s *BlogService) DeletePost(userID, postID uuid.UUID) error {
+	post, err := s.postRepo.GetByID(postID)
+	if err != nil {
+		return err
+	}
+	if post.AuthorID != userID {
+		return errors.New("not authorized")
+	}
+	return s.postRepo.Delete(postID)
+}
+
+func (s *BlogService) WriteComment(userID, postID uuid.UUID, body string) error {
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		return err
+	}
+
+	post, err := s.postRepo.GetByID(postID)
+	if err != nil {
+		return err
+	}
+
+	comment, err := models.CreateComment(userID, postID, body)
+	if err != nil {
+		return err
+	}
+
+	if err := s.commentRepo.Create(&comment); err != nil {
+		return err
+	}
+
+	post.AddComment(comment.ID)
+	if err := s.postRepo.Update(post); err != nil {
+		return err
+	}
+
+	user.AddComment(comment.ID)
+	return s.userRepo.Update(user)
+}
+
+func (s *BlogService) LikeComment(userID, commentID uuid.UUID) error {
+	if _, err := s.userRepo.GetByID(userID); err != nil {
+		return err
+	}
+	if _, err := s.commentRepo.GetByID(commentID); err != nil {
+		return err
+	}
+	return s.commentRepo.Like(commentID, userID)
+}
+
+func (s *BlogService) DislikeComment(userID, commentID uuid.UUID) error {
+	if _, err := s.userRepo.GetByID(userID); err != nil {
+		return err
+	}
+	if _, err := s.commentRepo.GetByID(commentID); err != nil {
+		return err
+	}
+	return s.commentRepo.Unlike(commentID, userID)
+}
+
+func (s *BlogService) EditComment(userID, commentID uuid.UUID, newBody string) error {
+	comment, err := s.commentRepo.GetByID(commentID)
+	if err != nil {
+		return err
+	}
+	if err := comment.ChangeBody(userID, newBody); err != nil {
+		return err
+	}
+	return s.commentRepo.Update(comment)
 }
